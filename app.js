@@ -1,46 +1,58 @@
 var express = require('express');
-var path = require('path');
-var favicon = require('serve-favicon');
-var logger = require('morgan');
-var cookieParser = require('cookie-parser');
+var http = require('http');
+var path = require("path");
+var logger = require('morgan'); // loggin 미들 웨어
 var bodyParser = require('body-parser');
 
-var index = require('./routes/index');
-var users = require('./routes/users');
+var app = express();    // express 생성
+app.set("views", path.resolve(__dirname, "views"));
+app.set("view engine", "ejs");
 
-var app = express();
+var entries = [];
+app.locals.entries = entries;
 
-// view engine setup
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'ejs');
 
-// uncomment after placing your favicon in /public
-//app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
 app.use(logger('dev'));
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(bodyParser.urlencoded({extended : false}));
 
-app.use('/', index);
-app.use('/users', users);
+app.use('/', express.static('public')); // root 하위 static 경로를 포함한다. url 로 접근 가능
 
-// catch 404 and forward to error handler
-app.use(function(req, res, next) {
-  var err = new Error('Not Found');
-  err.status = 404;
-  next(err);
+app.get("/", function (request, response) {
+    response.render("index", {
+        message: "Node.JS!!",
+        title: "Hi!!"
+    });
 });
 
-// error handler
-app.use(function(err, req, res, next) {
-  // set locals, only providing error in development
-  res.locals.message = err.message;
-  res.locals.error = req.app.get('env') === 'development' ? err : {};
-
-  // render the error page
-  res.status(err.status || 500);
-  res.render('error');
+app.get("/new-entry", function (request, response) {
+    response.render("new-entry");
 });
 
-module.exports = app;
+app.post("/new-entry", function(request, response) {
+    if (!request.body.title || !request.body.body) {
+        response.status(400).send("Entries must have a title and a body");
+        return;
+    }
+
+    entries.push({
+        title : request.body.title,
+        content : request.body.body,
+        published: new Date()
+    });
+
+    response.redirect("/");
+})
+
+app.get("/test", function (request, response) {
+    console.log("test url " + request.url);
+    response.end("test");
+});
+
+app.use(function(request, response) {
+    console.log("error page!!");
+    response.status(404).render("404");
+});
+
+
+
+http.createServer(app).listen(3000);
