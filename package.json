@@ -1,7 +1,7 @@
 {
-  "name": "nodejs-tutorial",
+  "name": "redis-with-express",
   "author": "QuicK(Yion)",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "private": true,
   "scripts": {
     "start": "node app"
