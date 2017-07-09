@@ -1,19 +1,14 @@
-<% include header %>
-<% if (entries.length) { %>
-  <% entries.forEach(function(entry) { %>
-  <div class="panel panel-default">
-    <div class="panel-heading">
-      <div class="text-muted pull-right">
-        <%= entry.published %>
-      </div>
-      <%= entry.title %>
-    </div>
-    <div class="panel-body">
-      <%= entry.content %>
-    </div>
-  </div>
-<% } ) %>
-<% } else {%>
-No entries! <a href="/new-entry">Add One!</a>
-<% } %>
-<% include footer %>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title><%= title %></title>
+</head>
+<body>
+this is index page!
+
+<div>Cookie passed: <%= cookie %></div>
+<div>Signed Cookie passed : <%= signedCookie %></div>
+<div>Session: <%= session %></div>
+</body>
+</html>
