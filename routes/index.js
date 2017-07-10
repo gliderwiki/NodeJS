@@ -1,31 +1,41 @@
+var util = require('../middleware/utilities');
+var config = require('../config');
 
-exports.index = function index(req, res) {
-    res.cookie('IndexCookie', 'This was set from Index');
-    res.render('index', {title: 'Index!!',
-        cookie: JSON.stringify(req.cookies),
-        session: JSON.stringify(req.session),
-        signedCookie: JSON.stringify(req.signedCookies)
-    });
+module.exports.index = index;
+module.exports.login = login;
+module.exports.loginProcess = loginProcess;
+module.exports.logout = logOut;
+module.exports.chat = chat;
+
+
+function index(req, res) {
+    res.render('index', {title: 'Index!!'});
 }
-
-exports.login = function login(req, res) {
-    res.render('login', {title: 'Login!!'});
-};
-
-exports.chat = function chat(req, res) {
-    res.render('chat', {title: 'chat!!', sessionCount: req.session.pageCount});
-};
 
 function login(req, res) {
-    res.send('Login');
-}
+    res.render('login', {title: 'Login!!', message: req.flash('error')});
+};
+
+function chat(req, res) {
+    res.render('chat', {title: 'chat!!'});
+};
 
 function loginProcess(req, res) {
+    console.log(req.body);
+    var isAuth = util.auth(req.body.username, req.body.password, req.session);
+
+    if (isAuth) {
+        res.redirect('/chat');
+    } else {
+        req.flash('error', 'Wrong Username or Password');
+        res.redirect(config.routes.login);
+    }
+}
+
+function logOut(req, res) {
+    util.logOut(req.session);
     res.redirect('/');
 }
 
-function chat(req, res) {
-    res.send('Chat');
-}
 
 
