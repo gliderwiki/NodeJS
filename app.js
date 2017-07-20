@@ -1,59 +1,57 @@
-var express = require('express');
-var path = require('path');
-var logger = require('morgan');
-var cookieParser = require('cookie-parser');
-var bodyParser = require('body-parser');
+var express = require('express'),
+    partials = require('express-partials'),
+    app = express(),
+    routes = require('./routes'),
+    errorHandlers = require('./middleware/errorhandlers'),
+    log = require('./middleware/log'),
+    cookieParser = require('cookie-parser'),
+    bodyParser = require('body-parser'),
+    csrf = require('csurf'),
+    session = require('express-session'),
+    RedisStore = require('connect-redis')(session),
+    util = require('./middleware/utilities'),
+    flash = require('connect-flash'),
+    config = require('./config'),
+    io = require('./socket.io'),
+    passport = require('./passport');
 
-var index = require('./routes/index');
-var users = require('./routes/users');
-var passport = require('./passport')
-
-var app = express();
-
-// view engine setup
-app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
+app.set('view options', {defaultLayout: 'layout'});
 
-// uncomment after placing your favicon in /public
-//app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
-app.use(logger('dev'));
+app.use(partials());
+app.use(log.logger);
+app.use(express.static(__dirname + '/static'));
+app.use(cookieParser(config.secret));
 app.use(session({
-  secret: config.secret,
-  saveUninitialized: true,
-  resave: true,
-  store: new RedisStore(
-      {url: config.redisUrl}
-  )
-}));
-
+      secret: config.secret,
+      saveUninitialized: true,
+      resave: true,
+      store: new RedisStore(
+          {url: config.redisUrl})
+    })
+);
 app.use(passport.passport.initialize());
 app.use(passport.passport.session());
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
-
-app.use('/', index);
-app.use('/users', users);
-
+app.use(bodyParser.urlencoded({extended: false}));
+app.use(csrf());
+app.use(util.csrf);
+app.use(util.authenticated);
+app.use(flash());
+app.use(util.templateRoutes);
+//routes
+app.get('/', routes.index);
+app.get(config.routes.login, routes.login);
+app.get(config.routes.logout, routes.logOut);
+app.get(config.routes.register, routes.register);
+app.post(config.routes.register, routes.registerProcess);
+app.get(config.routes.chat, [util.requireAuthentication], routes.chat);
+app.get('/error', function(req, res, next){
+  next(new Error('A contrived error'));
+});
 passport.routes(app);
+app.use(errorHandlers.error);
+app.use(errorHandlers.notFound);
 
-// catch 404 and forward to error handler
-app.use(function(req, res, next) {
-  var err = new Error('Not Found');
-  err.status = 404;
-  next(err);
-});
-
-// error handler
-app.use(function(err, req, res, next) {
-  // set locals, only providing error in development
-  res.locals.message = err.message;
-  res.locals.error = req.app.get('env') === 'development' ? err : {};
-
-  // render the error page
-  res.status(err.status || 500);
-  res.render('error');
-});
-
-module.exports = app;
+var server = app.listen(config.port);
+io.startIo(server);
