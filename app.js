@@ -6,6 +6,7 @@ var bodyParser = require('body-parser');
 
 var index = require('./routes/index');
 var users = require('./routes/users');
+var passport = require('./passport')
 
 var app = express();
 
@@ -16,6 +17,17 @@ app.set('view engine', 'ejs');
 // uncomment after placing your favicon in /public
 //app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
 app.use(logger('dev'));
+app.use(session({
+  secret: config.secret,
+  saveUninitialized: true,
+  resave: true,
+  store: new RedisStore(
+      {url: config.redisUrl}
+  )
+}));
+
+app.use(passport.passport.initialize());
+app.use(passport.passport.session());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
