@@ -1,5 +1,5 @@
 {
-  "name": "redis-with-express",
+  "name": "socket-io",
   "author": "QuicK(Yion)",
   "version": "0.0.1",
   "private": true,
@@ -7,18 +7,7 @@
     "start": "node app"
   },
   "dependencies": {
-    "body-parser": "^1.16.0",
-    "connect-flash": "^0.1.1",
-    "connect-redis": "^3.3.0",
-    "cookie-parser": "~1.4.3",
-    "csurf": "^1.9.0",
-    "debug": "~2.6.0",
-    "ejs": "~2.5.5",
     "express": "^4.6.1",
-    "express-partials": "0.2.0",
-    "express-session": "^1.15.3",
-    "morgan": "~1.7.0",
-    "redis": "^2.7.1",
-    "serve-favicon": "~2.3.2"
+    "socket.io": "^2.0.3"
   }
 }
